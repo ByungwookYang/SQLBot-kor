@@ -1,0 +1,66 @@
+def sync_table(session: SessionDep, ds: CoreDatasource, tables: List[CoreTable]):
+    # 메타데이터 로드
+    metadata_list = entity_meta_gen()
+    
+    # 테이블명 -> ENT_NAME 매핑
+    table_meta_map = {}
+    for meta in metadata_list:
+        table_name = meta.get('ENT_TAB_MASTER')
+        ent_name = meta.get('ENT_NAME')
+        if table_name and ent_name:
+            table_meta_map[table_name] = ent_name
+    
+    id_list = []
+    for item in tables:
+        statement = select(CoreTable).where(and_(CoreTable.ds_id == ds.id, CoreTable.table_name == item.table_name))
+        record = session.exec(statement).first()
+        
+        # table_comment에 메타데이터 추가
+        original = item.table_comment or ''
+        meta_name = table_meta_map.get(item.table_name, '')
+        
+        if original and meta_name:
+            enhanced_table_comment = f"{original} - {meta_name}"
+        elif meta_name:
+            enhanced_table_comment = meta_name
+        else:
+            enhanced_table_comment = original
+        
+        # update exist table
+        if record is not None:
+            item.id = record.id
+            id_list.append(record.id)
+
+            record.table_comment = enhanced_table_comment  # 강화된 설명 저장
+            session.add(record)
+            session.commit()
+        else:
+            # save new table
+            table = CoreTable(
+                ds_id=ds.id, 
+                checked=True, 
+                table_name=item.table_name, 
+                table_comment=enhanced_table_comment,  # 강화된 설명
+                custom_comment=enhanced_table_comment   # 동일하게
+            )
+            session.add(table)
+            session.flush()
+            session.refresh(table)
+            item.id = table.id
+            id_list.append(table.id)
+            session.commit()
+
+        # sync field
+        fields = getFieldsByDs(session, ds, item.table_name)
+        sync_fields(session, ds, item, fields)
+
+    if len(id_list) > 0:
+        session.query(CoreTable).filter(and_(CoreTable.ds_id == ds.id, CoreTable.id.not_in(id_list))).delete(
+            synchronize_session=False)
+        session.query(CoreField).filter(and_(CoreField.ds_id == ds.id, CoreField.table_id.not_in(id_list))).delete(
+            synchronize_session=False)
+        session.commit()
+    else:
+        session.query(CoreTable).filter(CoreTable.ds_id == ds.id).delete(synchronize_session=False)
+        session.query(CoreField).filter(CoreField.ds_id == ds.id).delete(synchronize_session=False)
+        session.commit()
