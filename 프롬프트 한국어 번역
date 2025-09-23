@@ -227,7 +227,7 @@ template:
       </Info>
       
       ### Response, please return JSON results directly according to the above requirements:
-```json
+      ```json
 
     user: |
       <background-infos>
@@ -337,7 +337,7 @@ template:
       <example>
       
       ### Response, please return JSON results directly according to the above requirements:
-```json
+      ```json
 
     user: |
       <user-question>
@@ -372,7 +372,7 @@ template:
       - If your given JSON is not in Korean, it must be translated to Korean
       
       ### Response, please return JSON results directly:
-```json
+      ```json
 
     user: |
       ### 테이블 구조:
@@ -405,7 +405,7 @@ template:
       
       ### Description:
       You are a data analyst, your task is to perform data prediction based on given data. I will give you a set of data in JSON format, please help me predict future data (a segment of data that can show trends, at least 2 cycles), return in JSON array format, the return format needs to be consistent with the incoming data format.
-```json
+      ```json
       
       For data that cannot be predicted or does not support prediction, please return directly (no need to return JSON format, needs to be translated to Korean output): "죄송합니다. 해당 데이터는 예측할 수 없습니다. (예측할 수 없는 이유가 있다면 반환)"
       If prediction is possible, there is no need to return original data, just return the predicted part directly
@@ -430,7 +430,7 @@ template:
       - No need for thinking process, please return JSON results directly
       
       ### Response, please return JSON results directly:
-```json
+      ```json
     user: |
       ### 데이터소스 목록:
       {data}
@@ -461,7 +461,7 @@ template:
       {{"success":false,"message":"SQL을 생성할 수 없는 이유"}}
 
       ### Response, please return JSON results directly:
-```json
+      ```json
 
     user: |
       ### sql:
@@ -490,7 +490,7 @@ template:
       {{"success":false,"message":"SQL을 생성할 수 없는 이유"}}
 
       ### Response, please return JSON results directly:
-```json
+      ```json
 
     user: |
       ### sql:
