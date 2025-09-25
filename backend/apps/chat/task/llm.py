@@ -1296,3 +1296,26 @@ def get_lang_name(lang: str):
     if lang and lang == 'en':
         return '英文'
     return '简体中文'
+
+
+async def generate_sql_from_schema_and_question(db_schema: dict, question: str) -> str:
+    """
+    db_schema와 question만 받아서 SQL문을 생성해주는 최소 함수 예시
+    """
+    # 필요한 최소 LLMConfig, ChatQuestion, CurrentUser 등은 더미로 생성
+    from apps.ai_model.model_factory import get_default_config
+    from apps.chat.models.chat_model import ChatQuestion
+    from common.core.deps import CurrentUser
+
+    config = await get_default_config()
+    dummy_user = CurrentUser(id=1, oid=1, language='ko')
+    dummy_question = ChatQuestion(chat_id=1, question=question, db_schema=db_schema, lang='ko')
+
+    llm_service = LLMService(current_user=dummy_user, chat_question=dummy_question, config=config)
+    llm_service.init_messages()
+    llm_service.init_record()
+    sql_chunks = llm_service.generate_sql()
+    sql_text = ""
+    for chunk in sql_chunks:
+        sql_text += chunk.get('content', '')
+    return sql_text
