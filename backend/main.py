@@ -99,6 +99,15 @@ app.add_exception_handler(Exception, exception_handler.global_exception_handler)
 mcp.setup_server()
 
 sqlbot_xpack.init_fastapi_app(app)
+
+from fastapi import Body
+from backend.apps.chat.task.llm import generate_sql_from_schema_and_question
+
+@app.post("/generate-sql")
+async def generate_sql(db_schema: dict = Body(...), question: str = Body(...)):
+    sql = await generate_sql_from_schema_and_question(db_schema, question)
+    return {"sql": sql}
+
 if __name__ == "__main__":
     import uvicorn
 
